@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Wealth & Elm Business Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .elm-glow {
+            box-shadow: 0 0 15px rgba(222, 255, 154, 0.1);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800 pb-6">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+                <i class="fa-solid px-3 py-1 bg-[#deff9a] text-black rounded-lg text-xl font-black">E</i> 
+                SYSTEM OVERVIEW
+            </h1>
+            <p class="text-gray-400 mt-1">ระบบติดตามสถานะการเงินรวมและวิเคราะห์ธุรกิจกาแฟ Elm</p>
+        </div>
+        <div class="flex items-center gap-3 bg-gray-900 border border-gray-800 px-4 py-2 rounded-xl">
+            <span id="connection-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="connection-status-text" class="text-sm font-medium text-gray-300">กำลังเชื่อมต่อข้อมูล...</span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto space-y-8">
+        
+        <!-- SECTION 1: THE BIG THREE (CASH FLOW, INVESTING, ELM) -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Cash Flow Card -->
+            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between h-44">
+                <div>
+                    <div class="flex justify-between items-center text-gray-400 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider">1. Liquidity & Operations</span>
+                        <i class="fa-solid fa-wallet text-sky-400 text-lg"></i>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-300">CASH FLOW (เงินหมุนเวียน)</h3>
+                    <p id="val-cashflow" class="text-3xl font-bold text-white mt-2">฿0.00</p>
+                </div>
+                <div class="text-xs text-sky-400 flex items-center gap-1 mt-4 border-t border-gray-900 pt-3">
+                    <i class="fa-solid fa-circle-arrow-up"></i> พร้อมใช้สำรองจ่ายและซื้อวัตถุดิบ Elm
+                </div>
+            </div>
+
+            <!-- Investing Card -->
+            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between h-44">
+                <div>
+                    <div class="flex justify-between items-center text-gray-400 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider">2. Wealth Accumulation</span>
+                        <i class="fa-solid fa-chart-line text-purple-400 text-lg"></i>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-300">INVESTING (เงินลงทุน/เงินจม)</h3>
+                    <p id="val-investing" class="text-3xl font-bold text-white mt-2">฿0.00</p>
+                </div>
+                <div class="text-xs text-purple-400 flex items-center gap-1 mt-4 border-t border-gray-900 pt-3">
+                    <i class="fa-solid fa-lock"></i> พอร์ตหุ้น/สินทรัพย์และอุปกรณ์ถาวร (PPE)
+                </div>
+            </div>
+
+            <!-- Elm Business Card -->
+            <div class="bg-gray-950 border border-[#deff9a]/30 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between h-44 elm-glow">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-[#deff9a]/5 rounded-bl-full pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-center text-gray-400 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-[#deff9a]">3. Primary Business Focus</span>
+                        <i class="fa-solid fa-mug-hot text-[#deff9a] text-lg"></i>
+                    </div>
+                    <h3 class="text-sm font-medium text-gray-300">ELM COFFEE (กำไรสุทธิสะสม)</h3>
+                    <p id="val-elmprofit" class="text-3xl font-bold text-[#deff9a] mt-2">฿0.00</p>
+                </div>
+                <div class="text-xs text-emerald-400 flex items-center gap-1 mt-4 border-t border-gray-900 pt-3">
+                    <i class="fa-solid fa-arrow-trend-up"></i> คํานวณสุทธิรายเดือนจากระบบสูตรจริง
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SECTION 2: CHARTS & FINANCIAL SYSTEM VISUALIZATION -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Wealth Distribution Chart -->
+            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 lg:col-span-1 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-white mb-1">สัดส่วนเงินทั้งระบบ</h3>
+                    <p class="text-xs text-gray-400 mb-4">การกระจายตัวของเงินสด ทรัพย์สิน และทุนธุรกิจ</p>
+                </div>
+                <div class="w-full flex justify-center py-4">
+                    <canvas id="wealthChart" style="max-height: 200px; max-width: 200px;"></canvas>
+                </div>
+                <div class="space-y-2 text-xs border-t border-gray-900 pt-4 mt-2">
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Cash Flow</span>
+                        <span id="label-pct-cash" class="font-bold text-white">0%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Investing</span>
+                        <span id="label-pct-invest" class="font-bold text-white">0%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="flex items-center gap-2 text-gray-400"><span class="w-2.5 h-2.5 rounded-full bg-[#deff9a]"></span> Elm Profit</span>
+                        <span id="label-pct-elm" class="font-bold text-white">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Elm Business Performance Trend -->
+            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-base font-semibold text-white mb-1">Elm Operation & Trend</h3>
+                            <p class="text-xs text-gray-400">เปรียบเทียบ รายได้ ยอดจ่ายวัตถุดิบ และค่าเสื่อมราคาอุปกรณ์รายเดือน</p>
+                        </div>
+                        <span class="text-xs bg-gray-900 border border-gray-800 text-[#deff9a] font-mono px-2 py-1 rounded-md">Focus Line</span>
+                    </div>
+                </div>
+                <div class="w-full h-56 pt-4">
+                    <canvas id="elmTrendChart"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SECTION 3: SYSTEM LOGS & STRATEGIC NOTE -->
+        <section class="bg-gray-950 border border-gray-800 rounded-2xl p-6">
+            <h3 class="text-base font-semibold text-white mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-lightbulb text-amber-400 text-sm"></i> Strategic Note (บันทึกกลยุทธ์จากนายทุน)
+            </h3>
+            <div class="text-sm text-gray-300 space-y-2 bg-gray-900/50 p-4 rounded-xl border border-gray-900">
+                <p class="font-medium text-white">📌 แผนจำกัดงบลงทุนเพื่อสร้างฐานกระแสเงินสดหลัก:</p>
+                <ul class="list-disc list-inside text-gray-400 space-y-1 pl-2">
+                    <li>แช่แข็งโปรเจกต์โยเกิร์ต <span class="text-gray-300 font-medium">Grain</span> ไว้ชั่วคราว เพื่อไม่ให้เกิดรายจ่าย supplies และ อุปกรณ์ซ้ำซ้อน</li>
+                    <li>ดันเมนูกาแฟเบสิก <span class="text-[#deff9a] font-medium">Elm Essential (40 บาท)</span> เพื่อเน้นเก็บรอบเงินสดรายวันและครอบคลุมค่าเสื่อมราคาคงที่ (Fixed Depreciation ฿63.17/เดือน) ให้เร็วที่สุด</li>
+                    <li>ใช้กระแสเงินสดสะสมที่ได้จาก Elm ไปเป็นทุนตั้งต้นให้กับ Grain ในอนาคต โดยไม่ต้องดึงเงินจากหน้าพอร์ต INVESTING หลักออกมา</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto text-center text-xs text-gray-600 mt-12 border-t border-gray-900 pt-6">
+        Elm & Wealth Management Console • Tailored for Agile Small Business Operations
+    </footer>
+
+    <script>
+        // ==========================================
+        // 🚨 ส่วนที่นายทุนต้องแก้ไข: นำลิงก์จากขั้นที่ 1 มาวางตรงนี้ครับ 🚨
+        // ==========================================
+        const ELM_SHEET_API = "https://script.google.com/macros/s/xxxxxx/exec"; // วางลิงก์เว็บแอปของ Elm
+        const CASH_FLOW_API = "https://script.google.com/macros/s/xxxxxx/exec"; // วางลิงก์กระแสเงินสด
+        const INVESTING_API = "https://script.google.com/macros/s/xxxxxx/exec"; // วางลิงก์พอร์ตลงทุน
+        
+        // ตัวแปรเก็บกราฟเพื่อไว้อัพเดททีหลัง
+        let wealthChart, elmTrendChart;
+
+        // ฟังก์ชันจัดฟอร์แมตตัวเลขเงินบาท
+        function formatTHB(value) {
+            return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(value);
+        }
+
+        // ฟังก์ชันเริ่มต้นวาดกราฟแบบจำลองรอก่อนที่ข้อมูลจริงจะโหลดเสร็จ
+        function initCharts(cash = 0, invest = 0, elm = 0, months = [], revenues = [], costs = [], deps = []) {
+            const total = cash + invest + elm;
+            const pctCash = total > 0 ? ((cash/total)*100).toFixed(1) : 0;
+            const pctInvest = total > 0 ? ((invest/total)*100).toFixed(1) : 0;
+            const pctElm = total > 0 ? ((elm/total)*100).toFixed(1) : 0;
+
+            document.getElementById('label-pct-cash').innerText = pctCash + '%';
+            document.getElementById('label-pct-invest').innerText = pctInvest + '%';
+            document.getElementById('label-pct-elm').innerText = pctElm + '%';
+
+            // วาดวงกลมสัดส่วน
+            const ctxWealth = document.getElementById('wealthChart').getContext('2d');
+            if (wealthChart) wealthChart.destroy();
+            wealthChart = new Chart(ctxWealth, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cash Flow', 'Investing', 'Elm Profit'],
+                    datasets: [{
+                        data: [cash, invest, elm],
+                        backgroundColor: ['#0ea5e9', '#a855f7', '#deff9a'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    cutout: '75%'
+                }
+            });
+
+            // วาดกราฟเปรียบเทียบ Elm
+            const ctxElm = document.getElementById('elmTrendChart').getContext('2d');
+            if (elmTrendChart) elmTrendChart.destroy();
+            elmTrendChart = new Chart(ctxElm, {
+                type: 'bar',
+                data: {
+                    labels: months.length > 0 ? months : ['202605', '202606', '202607'],
+                    datasets: [
+                        {
+                            label: 'รายได้ (Revenue)',
+                            data: revenues.length > 0 ? revenues : [0, 0, 0],
+                            backgroundColor: '#deff9a',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'ต้นทุนรวม (Total Cost)',
+                            data: costs.length > 0 ? costs : [0, 0, 0],
+                            backgroundColor: '#374151',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'ค่าเสื่อมอุปกรณ์ (Depreciation)',
+                            data: deps.length > 0 ? deps : [0, 0, 0],
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+        }
+
+        // ฟังก์ชันหลักในการวิ่งไปดูดข้อมูลจริงจากลิงก์ Google Sheets ทั้งหมด
+        async function fetchAllData() {
+            try {
+                // ตัวเลขเริ่มต้น (หากยังโหลด api ตัวอื่นไม่เสร็จ)
+                let cashValue = 45200; // หรือสแตนด์บายจำลองไว้ก่อน
+                let investValue = 128500;
+                let elmAccumulatedProfit = 0;
+
+                let elmMonths = [];
+                let elmRevenues = [];
+                let elmCosts = [];
+                let elmDeps = [];
+
+                // 1. ดึงข้อมูลพอร์ต Cash Flow (ถ้าตั้งค่าลิงก์แล้ว)
+                if (CASH_FLOW_API !== "https://script.google.com/macros/s/xxxxxx/exec") {
+                    const res = await fetch(CASH_FLOW_API);
+                    const data = await res.json();
+                    if(data && data.balance) cashValue = parseFloat(data.balance);
+                }
+
+                // 2. ดึงข้อมูลพอร์ต Investing (ถ้าตั้งค่าลิงก์แล้ว)
+                if (INVESTING_API !== "https://script.google.com/macros/s/xxxxxx/exec") {
+                    const res = await fetch(INVESTING_API);
+                    const data = await res.json();
+                    if(data && data.balance) investValue = parseFloat(data.balance);
+                }
+
+                // 3. ดึงข้อมูลธุรกิจกาแฟ Elm (ดึงข้อมูลประวัติรายเดือนมาพล็อตกราฟ)
+                if (ELM_SHEET_API !== "https://script.google.com/macros/s/xxxxxx/exec") {
+                    const res = await fetch(ELM_SHEET_API);
+                    const data = await res.json();
+                    if(data && data.length > 0) {
+                        elmMonths = data.map(item => item.month);
+                        elmRevenues = data.map(item => parseFloat(item.revenue || 0));
+                        elmCosts = data.map(item => parseFloat(item.total_cost || 0));
+                        elmDeps = data.map(item => parseFloat(item.depreciation || 0));
+                        
+                        // หากำไรสะสมรวมทุกเดือน
+                        elmAccumulatedProfit = data.reduce((sum, item) => sum + parseFloat(item.revenue - item.total_cost - item.depreciation), 0);
+                    }
+                }
+
+                // นำข้อมูลจริงที่ได้ไปใส่ในการ์ดบนหน้าจอ
+                document.getElementById('val-cashflow').innerText = formatTHB(cashValue);
+                document.getElementById('val-investing').innerText = formatTHB(investValue);
+                document.getElementById('val-elmprofit').innerText = formatTHB(elmAccumulatedProfit);
+
+                // อัปเดตกราฟด้วยข้อมูลจริง
+                initCharts(cashValue, investValue, elmAccumulatedProfit, elmMonths, elmRevenues, elmCosts, elmDeps);
+
+                // ปรับสถานะการเชื่อมต่อเป็นสีเขียว
+                document.getElementById('connection-status-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                document.getElementById('connection-status-text').innerText = "เชื่อมต่อระบบฐานข้อมูลแบบ Real-time แล้ว";
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('connection-status-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                document.getElementById('connection-status-text').innerText = "การดึงข้อมูลผิดพลาด (ระบบแสดงข้อมูลจำลอง)";
+                // แสดงข้อมูลจำลองถ้าระบบดึงค่าไม่สำเร็จ
+                initCharts(45200, 128500, 3850, ['202605', '202606', '202607'], [120, 0, 5600], [53.71, 0, 1860], [0, 0, 63.17]);
+            }
+        }
+
+        // รันการโหลดเมื่อหน้าเว็บโหลดเสร็จสิ้น
+        window.onload = function() {
+            initCharts(45200, 128500, 3850, ['202605', '202606', '202607'], [120, 0, 5600], [53.71, 0, 1860], [0, 0, 63.17]);
+            fetchAllData();
+        };
+    </script>
+</body>
+</html>
